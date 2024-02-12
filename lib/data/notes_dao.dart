@@ -1,23 +1,23 @@
 import 'package:floor/floor.dart';
-import 'package:flutter_floor/models/notes.dart';
+import 'package:flutter_floor/model/notes.dart';
 
 @dao
 abstract class NotesDao {
-  @Query('select * from notes order by dateAdded desc')
+  @Query("SELECT * FROM tbl_notes")
   Future<List<Notes>> getAllNotes();
 
-  @Query('select * from notes where id = :id')
-  Future<Notes?> selectNote(int id);
+  @Query("DELETE FROM tbl_notes")
+  Future<void> deleteAllNotes();
 
-  @insert
-  Future<void> insertNotes(Notes notes);
+  @Query("SELECT * FROM tbl_notes WHERE id = :noteId")
+  Stream<Notes?> getSingleNote(int noteId);
+
+  @Insert(onConflict: OnConflictStrategy.replace)
+  Future<void> createNote(Notes notes);
+
+  @Update(onConflict: OnConflictStrategy.replace)
+  Future<void> updateNote(Notes notes);
 
   @delete
-  Future<void> deleteNotes(Notes notes);
-
-  @Query('DELETE FROM notes WHERE id = :idnotes')
-  Future<void> deleteById(int idnotes);
-
-  @update
-  Future<void> updateNotes(Notes notes);
+  Future<void> deleteNote(Notes notes);
 }

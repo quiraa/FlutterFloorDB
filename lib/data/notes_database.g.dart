@@ -85,7 +85,7 @@ class _$NotesDatabase extends NotesDatabase {
       },
       onCreate: (database, version) async {
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Notes` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `title` TEXT NOT NULL, `content` TEXT NOT NULL, `dateAdded` TEXT NOT NULL, `lastUpdate` TEXT, `category` TEXT, `isChecked` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `tbl_notes` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `title` TEXT NOT NULL, `content` TEXT NOT NULL, `date` TEXT NOT NULL)');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -103,45 +103,39 @@ class _$NotesDao extends NotesDao {
   _$NotesDao(
     this.database,
     this.changeListener,
-  )   : _queryAdapter = QueryAdapter(database),
+  )   : _queryAdapter = QueryAdapter(database, changeListener),
         _notesInsertionAdapter = InsertionAdapter(
             database,
-            'Notes',
+            'tbl_notes',
             (Notes item) => <String, Object?>{
                   'id': item.id,
-                  'title': item.title,
-                  'content': item.content,
-                  'dateAdded': item.dateAdded,
-                  'lastUpdate': item.lastUpdate,
-                  'category': item.category,
-                  'isChecked': item.isChecked ? 1 : 0
-                }),
+                  'title': item.noteTitle,
+                  'content': item.noteContent,
+                  'date': item.noteDate
+                },
+            changeListener),
         _notesUpdateAdapter = UpdateAdapter(
             database,
-            'Notes',
+            'tbl_notes',
             ['id'],
             (Notes item) => <String, Object?>{
                   'id': item.id,
-                  'title': item.title,
-                  'content': item.content,
-                  'dateAdded': item.dateAdded,
-                  'lastUpdate': item.lastUpdate,
-                  'category': item.category,
-                  'isChecked': item.isChecked ? 1 : 0
-                }),
+                  'title': item.noteTitle,
+                  'content': item.noteContent,
+                  'date': item.noteDate
+                },
+            changeListener),
         _notesDeletionAdapter = DeletionAdapter(
             database,
-            'Notes',
+            'tbl_notes',
             ['id'],
             (Notes item) => <String, Object?>{
                   'id': item.id,
-                  'title': item.title,
-                  'content': item.content,
-                  'dateAdded': item.dateAdded,
-                  'lastUpdate': item.lastUpdate,
-                  'category': item.category,
-                  'isChecked': item.isChecked ? 1 : 0
-                });
+                  'title': item.noteTitle,
+                  'content': item.noteContent,
+                  'date': item.noteDate
+                },
+            changeListener);
 
   final sqflite.DatabaseExecutor database;
 
@@ -157,48 +151,44 @@ class _$NotesDao extends NotesDao {
 
   @override
   Future<List<Notes>> getAllNotes() async {
-    return _queryAdapter.queryList(
-        'select * from notes order by dateAdded desc',
+    return _queryAdapter.queryList('SELECT * FROM tbl_notes',
         mapper: (Map<String, Object?> row) => Notes(
             row['id'] as int?,
             row['title'] as String,
             row['content'] as String,
-            row['dateAdded'] as String,
-            row['lastUpdate'] as String?,
-            row['category'] as String?));
+            row['date'] as String));
   }
 
   @override
-  Future<Notes?> selectNote(int id) async {
-    return _queryAdapter.query('select * from notes where id = ?1',
+  Future<void> deleteAllNotes() async {
+    await _queryAdapter.queryNoReturn('DELETE FROM tbl_notes');
+  }
+
+  @override
+  Stream<Notes?> getSingleNote(int noteId) {
+    return _queryAdapter.queryStream('SELECT * FROM tbl_notes WHERE id = ?1',
         mapper: (Map<String, Object?> row) => Notes(
             row['id'] as int?,
             row['title'] as String,
             row['content'] as String,
-            row['dateAdded'] as String,
-            row['lastUpdate'] as String?,
-            row['category'] as String?),
-        arguments: [id]);
+            row['date'] as String),
+        arguments: [noteId],
+        queryableName: 'tbl_notes',
+        isView: false);
   }
 
   @override
-  Future<void> deleteById(int idnotes) async {
-    await _queryAdapter
-        .queryNoReturn('DELETE FROM notes WHERE id = ?1', arguments: [idnotes]);
+  Future<void> createNote(Notes notes) async {
+    await _notesInsertionAdapter.insert(notes, OnConflictStrategy.replace);
   }
 
   @override
-  Future<void> insertNotes(Notes notes) async {
-    await _notesInsertionAdapter.insert(notes, OnConflictStrategy.abort);
+  Future<void> updateNote(Notes notes) async {
+    await _notesUpdateAdapter.update(notes, OnConflictStrategy.replace);
   }
 
   @override
-  Future<void> updateNotes(Notes notes) async {
-    await _notesUpdateAdapter.update(notes, OnConflictStrategy.abort);
-  }
-
-  @override
-  Future<void> deleteNotes(Notes notes) async {
+  Future<void> deleteNote(Notes notes) async {
     await _notesDeletionAdapter.delete(notes);
   }
 }
