@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_floor/constants/colors.dart';
+import 'package:flutter_floor/constants/typography.dart';
 import 'package:flutter_floor/model/notes.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class NoteCardItem extends StatelessWidget {
   final Notes notes;
@@ -16,12 +19,11 @@ class NoteCardItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: Colors.white,
+      color: Theme.of(context).colorScheme.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
-        side: const BorderSide(
-          color: Colors.grey,
-          width: 1.0,
+        side: BorderSide(
+          color: Theme.of(context).colorScheme.outline,
         ),
       ),
       clipBehavior: Clip.antiAlias,
@@ -36,21 +38,28 @@ class NoteCardItem extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(notes.id.toString()),
+                    Text(
+                      notes.noteTitle,
+                      style: AppTypography.noteTitle,
+                    ),
                     const SizedBox(height: 8.0),
-                    Text(notes.noteTitle),
+                    Text(
+                      notes.noteContent,
+                      style: AppTypography.noteContent,
+                    ),
                     const SizedBox(height: 8.0),
-                    Text(notes.noteContent),
-                    const SizedBox(height: 8.0),
-                    Text(notes.noteDate),
+                    Text(
+                      notes.noteDate,
+                      style: AppTypography.noteDate,
+                    ),
                   ],
                 ),
               ),
               IconButton(
                 onPressed: onNoteDeleted,
-                icon: const Icon(
-                  Icons.delete,
-                  color: Colors.red,
+                icon: SvgPicture.asset(
+                  'assets/trash.svg',
+                  color: deleteIconColor,
                 ),
               ),
             ],

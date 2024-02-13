@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_floor/model/notes.dart';
 import 'package:flutter_floor/provider/note_provider.dart';
 import 'package:flutter_floor/utils/generate_date.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 
 class AddNotePage extends StatefulWidget {
@@ -65,7 +66,7 @@ class _AddNotePageState extends State<AddNotePage> {
           }
           Navigator.pop(context);
         },
-        child: const Icon(Icons.save),
+        child: SvgPicture.asset('assets/save.svg'),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );

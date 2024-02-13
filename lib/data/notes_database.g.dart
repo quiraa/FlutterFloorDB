@@ -61,7 +61,9 @@ class _$NotesDatabase extends NotesDatabase {
     changeListener = listener ?? StreamController<String>.broadcast();
   }
 
-  NotesDao? _daoInstance;
+  NotesDao? _noteDaoInstance;
+
+  TodoDao? _todoDaoInstance;
 
   Future<sqflite.Database> open(
     String path,
@@ -86,6 +88,8 @@ class _$NotesDatabase extends NotesDatabase {
       onCreate: (database, version) async {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `tbl_notes` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `title` TEXT NOT NULL, `content` TEXT NOT NULL, `date` TEXT NOT NULL)');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `tbl_todo` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `task` TEXT NOT NULL, `isImportant` INTEGER NOT NULL)');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -94,8 +98,13 @@ class _$NotesDatabase extends NotesDatabase {
   }
 
   @override
-  NotesDao get dao {
-    return _daoInstance ??= _$NotesDao(database, changeListener);
+  NotesDao get noteDao {
+    return _noteDaoInstance ??= _$NotesDao(database, changeListener);
+  }
+
+  @override
+  TodoDao get todoDao {
+    return _todoDaoInstance ??= _$TodoDao(database, changeListener);
   }
 }
 
@@ -178,6 +187,26 @@ class _$NotesDao extends NotesDao {
   }
 
   @override
+  Future<List<Notes>> getAllNotesOrderByDate() async {
+    return _queryAdapter.queryList('SELECT * FROM tbl_notes ORDER BY date',
+        mapper: (Map<String, Object?> row) => Notes(
+            row['id'] as int?,
+            row['title'] as String,
+            row['content'] as String,
+            row['date'] as String));
+  }
+
+  @override
+  Future<List<Notes>> getAllNotesOrderByTitle() async {
+    return _queryAdapter.queryList('SELECT * FROM tbl_notes ORDER BY title ASC',
+        mapper: (Map<String, Object?> row) => Notes(
+            row['id'] as int?,
+            row['title'] as String,
+            row['content'] as String,
+            row['date'] as String));
+  }
+
+  @override
   Future<void> createNote(Notes notes) async {
     await _notesInsertionAdapter.insert(notes, OnConflictStrategy.replace);
   }
@@ -188,7 +217,74 @@ class _$NotesDao extends NotesDao {
   }
 
   @override
-  Future<void> deleteNote(Notes notes) async {
-    await _notesDeletionAdapter.delete(notes);
+  Future<void> deleteNote(Notes note) async {
+    await _notesDeletionAdapter.delete(note);
+  }
+}
+
+class _$TodoDao extends TodoDao {
+  _$TodoDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _todoInsertionAdapter = InsertionAdapter(
+            database,
+            'tbl_todo',
+            (Todo item) => <String, Object?>{
+                  'id': item.id,
+                  'task': item.todoTask,
+                  'isImportant': item.isImportant ? 1 : 0
+                }),
+        _todoUpdateAdapter = UpdateAdapter(
+            database,
+            'tbl_todo',
+            ['id'],
+            (Todo item) => <String, Object?>{
+                  'id': item.id,
+                  'task': item.todoTask,
+                  'isImportant': item.isImportant ? 1 : 0
+                }),
+        _todoDeletionAdapter = DeletionAdapter(
+            database,
+            'tbl_todo',
+            ['id'],
+            (Todo item) => <String, Object?>{
+                  'id': item.id,
+                  'task': item.todoTask,
+                  'isImportant': item.isImportant ? 1 : 0
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<Todo> _todoInsertionAdapter;
+
+  final UpdateAdapter<Todo> _todoUpdateAdapter;
+
+  final DeletionAdapter<Todo> _todoDeletionAdapter;
+
+  @override
+  Future<List<Todo>> getAllTodoOrderByTask() async {
+    return _queryAdapter.queryList('SELECT * FROM tbl_todo ORDER BY task ASC',
+        mapper: (Map<String, Object?> row) => Todo(row['id'] as int?,
+            row['task'] as String, (row['isImportant'] as int) != 0));
+  }
+
+  @override
+  Future<void> createTodo(Todo todos) async {
+    await _todoInsertionAdapter.insert(todos, OnConflictStrategy.replace);
+  }
+
+  @override
+  Future<void> updateTodo(Todo todos) async {
+    await _todoUpdateAdapter.update(todos, OnConflictStrategy.replace);
+  }
+
+  @override
+  Future<void> deleteTodo(Todo todos) async {
+    await _todoDeletionAdapter.delete(todos);
   }
 }

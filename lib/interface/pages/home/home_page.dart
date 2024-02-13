@@ -1,10 +1,9 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_floor/data/notes_database.dart';
-import 'package:flutter_floor/interface/pages/addnote/add_note_page.dart';
-import 'package:flutter_floor/model/notes.dart';
-import 'package:flutter_floor/provider/note_provider.dart';
-import 'package:flutter_floor/interface/widgets/note_card_item.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_floor/interface/pages/note/note_page.dart';
+import 'package:flutter_floor/interface/pages/todo/todo_page.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -14,77 +13,41 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  late NotesProvider _notesProvider;
-
-  @override
-  void initState() {
-    super.initState();
-    // notesProvider = Provider.of<NotesProvider>(context, listen: false);
-    // notesProvider.getListOfNotes();
-    Future.delayed(const Duration(milliseconds: 0), () async {
-      return await _notesProvider.getListOfNotes();
-    });
-  }
-
+  int _selectedIndex = 0;
   @override
   Widget build(BuildContext context) {
-    _notesProvider = Provider.of<NotesProvider>(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('MemoPad Flutter'),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: Icon(Icons.delete_forever),
+    return DefaultTabController(
+      length: 2,
+      initialIndex: 0,
+      child: Scaffold(
+        appBar: AppBar(
+          systemOverlayStyle: const SystemUiOverlayStyle(),
+          title: const Text('MemoPad Flutter'),
+          backgroundColor: Colors.transparent,
+          bottom: TabBar(
+            labelColor: Colors.blue,
+            indicatorColor: Colors.blue,
+            onTap: (int index) {
+              setState(() {
+                _selectedIndex = index;
+              });
+            },
+            tabs: const [
+              Tab(
+                icon: Icon(Icons.note_alt),
+                text: 'Note',
+              ),
+              Tab(
+                icon: Icon(Icons.edit_note),
+                text: 'Todo',
+              )
+            ],
           ),
-        ],
+        ),
+        body: const TabBarView(
+          children: [NotePage(), TodoPage()],
+        ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => AddNotePage(notes: null),
-            ),
-          );
-        },
-        child: Icon(Icons.add),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      body: Consumer<NotesProvider>(
-        builder: (context, notesProvider, _) {
-          return notesProvider.notes.isEmpty
-              ? const Center(
-                  child: Text('Empty Notes'),
-                )
-              : ListView.builder(
-                  padding: EdgeInsets.symmetric(horizontal: 10.0),
-                  itemCount: notesProvider.notes.length,
-                  itemBuilder: (context, index) {
-                    Notes notes = notesProvider.notes[index];
-                    return NoteCardItem(
-                      notes: notes,
-                      onNoteClicked: () => _navigateToEditPage(notes),
-                      onNoteDeleted: () => _deleteNoteAndRefreshList(notes),
-                    );
-                  },
-                );
-        },
-      ),
-    );
-  }
-
-  Future<void> _deleteNoteAndRefreshList(Notes notes) async {
-    await _notesProvider.deleteNote(notes);
-    await _notesProvider.getListOfNotes();
-  }
-
-  void _navigateToEditPage(Notes notes) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) {
-        return AddNotePage(notes: notes);
-      }),
     );
   }
 }

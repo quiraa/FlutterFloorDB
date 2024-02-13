@@ -3,6 +3,14 @@ import 'package:flutter_floor/data/notes_database.dart';
 import 'package:flutter_floor/model/notes.dart';
 
 class NotesProvider extends ChangeNotifier {
+  bool _isSortedByDate = true;
+  bool get isSortedByDate => _isSortedByDate;
+
+  void setSortedMode() {
+    _isSortedByDate = !_isSortedByDate;
+    notifyListeners();
+  }
+
   List<Notes> _notes = [];
   List<Notes> get notes => _notes;
 
@@ -13,9 +21,27 @@ class NotesProvider extends ChangeNotifier {
     return await $FloorNotesDatabase.databaseBuilder("notes_db.db").build();
   }
 
+  Future<void> getAllNotesByDate() async {
+    final db = await _createDatabase();
+    final sortedNotes = await db.noteDao.getAllNotesOrderByDate();
+    if (sortedNotes.isNotEmpty) {
+      _notes = sortedNotes;
+    }
+    notifyListeners();
+  }
+
+  Future<void> getAllNotesByTitle() async {
+    final db = await _createDatabase();
+    final filteredNotes = await db.noteDao.getAllNotesOrderByTitle();
+    if (filteredNotes.isNotEmpty) {
+      _notes = filteredNotes;
+    }
+    notifyListeners();
+  }
+
   Future<void> getListOfNotes() async {
     final db = await _createDatabase();
-    final allNotes = await db.dao.getAllNotes();
+    final allNotes = await db.noteDao.getAllNotes();
     if (allNotes.isNotEmpty) {
       _notes = allNotes;
     }
@@ -24,35 +50,28 @@ class NotesProvider extends ChangeNotifier {
 
   Future<void> createNote(Notes notes) async {
     final db = await _createDatabase();
-    final createdNote = await db.dao.createNote(notes);
+    final createdNote = await db.noteDao.createNote(notes);
     notifyListeners();
     return createdNote;
   }
 
   Future<void> updateNote(Notes notes) async {
     final db = await _createDatabase();
-    final updatedNote = await db.dao.updateNote(notes);
+    final updatedNote = await db.noteDao.updateNote(notes);
     notifyListeners();
     return updatedNote;
   }
 
   Future<void> deleteNote(Notes notes) async {
     final db = await _createDatabase();
-    await db.dao.deleteNote(notes);
+    await db.noteDao.deleteNote(notes);
     notifyListeners();
   }
 
   Future<void> deleteAllNotes() async {
     final db = await _createDatabase();
-    await db.dao.deleteAllNotes();
+    await db.noteDao.deleteAllNotes();
     _notes.clear();
     notifyListeners();
   }
-
-  // Future<void> getSingleNoteById(int noteId) async {
-  //   final db = await _createDatabase();
-  //   final selectedNote = db.dao.getSingleNote(noteId);
-  //   _currentNote = selectedNote;
-  //   notifyListeners();
-  // }
 }
