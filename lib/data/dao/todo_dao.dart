@@ -3,8 +3,11 @@ import 'package:floor/floor.dart';
 
 @dao
 abstract class TodoDao {
-  @Query('SELECT * FROM todo ORDER BY task ASC')
-  Future<List<Todo>> getAllTodoOrderByTask();
+  @Query('SELECT * FROM todo ORDER BY important DESC, task')
+  Future<List<Todo>> getAllTodoOrderByImportantAndTask();
+
+  @Query('DELETE FROM todo')
+  Future<void> deleteAllTodo();
 
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> createTodo(Todo todos);

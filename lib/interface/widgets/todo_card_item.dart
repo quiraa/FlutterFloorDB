@@ -52,8 +52,8 @@ class _TodoCardItemState extends State<TodoCardItem> {
             if (widget.todo!.isImportant == true)
               IconButton(
                 onPressed: () {},
-                icon: SvgPicture.asset(
-                  'assets/star.svg',
+                icon: const Icon(
+                  Icons.star,
                   color: Colors.blueAccent,
                 ),
               ),

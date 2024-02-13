@@ -12,10 +12,17 @@ class TodoProvider extends ChangeNotifier {
 
   Future<void> getAllTodos() async {
     final db = await _createDatabase();
-    final allTodos = await db.todoDao.getAllTodoOrderByTask();
+    final allTodos = await db.todoDao.getAllTodoOrderByImportantAndTask();
     if (allTodos.isNotEmpty) {
       _todos = allTodos;
     }
+    notifyListeners();
+  }
+
+  Future<void> deleteAllTodos() async {
+    final db = await _createDatabase();
+    await db.todoDao.deleteAllTodo();
+    _todos.clear();
     notifyListeners();
   }
 

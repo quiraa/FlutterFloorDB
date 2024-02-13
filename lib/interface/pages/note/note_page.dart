@@ -4,6 +4,7 @@ import 'package:flutter_floor/constants/typography.dart';
 import 'package:flutter_floor/interface/pages/addnote/add_note_page.dart';
 import 'package:flutter_floor/interface/widgets/note_card_item.dart';
 import 'package:flutter_floor/model/notes.dart';
+import 'package:flutter_floor/model/todo.dart';
 import 'package:flutter_floor/provider/note_provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
@@ -46,7 +47,9 @@ class _NotePageState extends State<NotePage> {
         actions: [
           IconButton(
             tooltip: 'Sort Notes',
-            onPressed: () {},
+            onPressed: () {
+              _showSortNotesDialog();
+            },
             icon: SvgPicture.asset(
               'assets/filter.svg',
               color: Colors.blueAccent,
@@ -127,6 +130,48 @@ class _NotePageState extends State<NotePage> {
       MaterialPageRoute(
         builder: (context) => const AddNotePage(notes: null),
       ),
+    );
+  }
+
+  void _showSortNotesDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Sort Notes By'),
+          content: StatefulBuilder(
+            builder: (context, setState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  RadioListTile<bool>(
+                    title: const Text('Date'),
+                    value: true,
+                    groupValue: _notesProvider.isSortedByDate,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        _notesProvider.setSortedMode();
+                        Navigator.pop(context);
+                      });
+                    },
+                  ),
+                  RadioListTile<bool>(
+                    title: const Text('Title'),
+                    value: false,
+                    groupValue: _notesProvider.isSortedByDate,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        _notesProvider.setSortedMode();
+                        Navigator.pop(context);
+                      });
+                    },
+                  ),
+                ],
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }

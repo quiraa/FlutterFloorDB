@@ -21,7 +21,8 @@ class _HomePageState extends State<HomePage> {
       initialIndex: 0,
       child: Scaffold(
         appBar: AppBar(
-          systemOverlayStyle: const SystemUiOverlayStyle(),
+          systemOverlayStyle:
+              const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
           title: const Text('MemoPad Flutter'),
           backgroundColor: Colors.transparent,
           bottom: TabBar(

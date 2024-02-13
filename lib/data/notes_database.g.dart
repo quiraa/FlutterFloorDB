@@ -89,7 +89,7 @@ class _$NotesDatabase extends NotesDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `tbl_notes` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `title` TEXT NOT NULL, `content` TEXT NOT NULL, `date` TEXT NOT NULL)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `tbl_todo` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `task` TEXT NOT NULL, `isImportant` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `todo` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `task` TEXT NOT NULL, `important` INTEGER NOT NULL)');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -229,29 +229,29 @@ class _$TodoDao extends TodoDao {
   )   : _queryAdapter = QueryAdapter(database),
         _todoInsertionAdapter = InsertionAdapter(
             database,
-            'tbl_todo',
+            'todo',
             (Todo item) => <String, Object?>{
                   'id': item.id,
                   'task': item.todoTask,
-                  'isImportant': item.isImportant ? 1 : 0
+                  'important': item.isImportant ? 1 : 0
                 }),
         _todoUpdateAdapter = UpdateAdapter(
             database,
-            'tbl_todo',
+            'todo',
             ['id'],
             (Todo item) => <String, Object?>{
                   'id': item.id,
                   'task': item.todoTask,
-                  'isImportant': item.isImportant ? 1 : 0
+                  'important': item.isImportant ? 1 : 0
                 }),
         _todoDeletionAdapter = DeletionAdapter(
             database,
-            'tbl_todo',
+            'todo',
             ['id'],
             (Todo item) => <String, Object?>{
                   'id': item.id,
                   'task': item.todoTask,
-                  'isImportant': item.isImportant ? 1 : 0
+                  'important': item.isImportant ? 1 : 0
                 });
 
   final sqflite.DatabaseExecutor database;
@@ -267,10 +267,16 @@ class _$TodoDao extends TodoDao {
   final DeletionAdapter<Todo> _todoDeletionAdapter;
 
   @override
-  Future<List<Todo>> getAllTodoOrderByTask() async {
-    return _queryAdapter.queryList('SELECT * FROM tbl_todo ORDER BY task ASC',
+  Future<List<Todo>> getAllTodoOrderByImportantAndTask() async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM todo ORDER BY important DESC, task',
         mapper: (Map<String, Object?> row) => Todo(row['id'] as int?,
-            row['task'] as String, (row['isImportant'] as int) != 0));
+            row['task'] as String, (row['important'] as int) != 0));
+  }
+
+  @override
+  Future<void> deleteAllTodo() async {
+    await _queryAdapter.queryNoReturn('DELETE FROM todo');
   }
 
   @override

@@ -8,7 +8,7 @@ class Todo {
   @ColumnInfo(name: 'task')
   String todoTask = 'Empty Task';
 
-  @ColumnInfo(name: 'isImportant')
+  @ColumnInfo(name: 'important')
   bool isImportant = false;
 
   Todo(this.id, this.todoTask, this.isImportant);
