@@ -6,10 +6,10 @@ class Notes {
   final int? id;
 
   @ColumnInfo(name: "title")
-  String noteTitle;
+  String noteTitle = "Untitled";
 
   @ColumnInfo(name: "content")
-  String noteContent;
+  String noteContent = "Empty Note";
 
   @ColumnInfo(name: "date")
   String noteDate;

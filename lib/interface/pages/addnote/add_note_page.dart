@@ -13,8 +13,33 @@ class AddNotePage extends StatefulWidget {
 }
 
 class _AddNotePageState extends State<AddNotePage> {
+  late NotesProvider notesProvider;
   late TextEditingController titleController;
   late TextEditingController contentController;
+
+  Future<void> createNote() async {
+    Notes notes = Notes(
+      null,
+      titleController.text.toString(),
+      contentController.text.toString(),
+      createDate(),
+    );
+    await notesProvider.createNote(notes);
+  }
+
+  Future<void> updateNote() async {
+    widget.notes!.noteTitle = titleController.text;
+    widget.notes!.noteContent = contentController.text;
+    await notesProvider.updateNote(widget.notes!);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    Future.delayed(const Duration(milliseconds: 0), () {
+      return notesProvider.getListOfNotes();
+    });
+  }
 
   @override
   void initState() {
@@ -27,29 +52,20 @@ class _AddNotePageState extends State<AddNotePage> {
 
   @override
   Widget build(BuildContext context) {
-    NotesProvider notesProvider = Provider.of<NotesProvider>(context);
+    notesProvider = Provider.of<NotesProvider>(context);
     return Scaffold(
       appBar: _addNotesAppBar(context),
       body: _buildUI(context),
-      floatingActionButton: _fabSaveNote(
-        onNoteSave: () {
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
           if (widget.notes != null) {
-            widget.notes!.noteTitle = titleController.text;
-            widget.notes!.noteContent = contentController.text;
-
-            notesProvider.updateNote(widget.notes!);
+            updateNote();
           } else {
-            notesProvider.createNote(
-              Notes(
-                null,
-                titleController.text.toString(),
-                contentController.text.toString(),
-                createDate(),
-              ),
-            );
+            createNote();
           }
           Navigator.pop(context);
         },
+        child: const Icon(Icons.save),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
@@ -82,13 +98,6 @@ class _AddNotePageState extends State<AddNotePage> {
         decoration:
             const InputDecoration(filled: true, hintText: 'Enter notes...'),
       ),
-    );
-  }
-
-  Widget _fabSaveNote({required Function onNoteSave}) {
-    return FloatingActionButton(
-      onPressed: () => onNoteSave,
-      child: const Icon(Icons.save),
     );
   }
 }

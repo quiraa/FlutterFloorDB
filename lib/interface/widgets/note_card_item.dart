@@ -1,26 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_floor/model/notes.dart';
 
-class NoteCardItem extends StatefulWidget {
+class NoteCardItem extends StatelessWidget {
   final Notes notes;
-  Function onNoteClicked;
-  Function onNoteDeleted;
+  final VoidCallback onNoteClicked;
+  final VoidCallback onNoteDeleted;
 
-  NoteCardItem(
-      {Key? key,
-      required this.notes,
-      required this.onNoteClicked,
-      required this.onNoteDeleted})
-      : super(key: key);
+  const NoteCardItem({
+    Key? key,
+    required this.notes,
+    required this.onNoteClicked,
+    required this.onNoteDeleted,
+  }) : super(key: key);
 
-  @override
-  _NoteCardItemState createState() => _NoteCardItemState();
-}
-
-class _NoteCardItemState extends State<NoteCardItem> {
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
         side: const BorderSide(
@@ -30,25 +26,33 @@ class _NoteCardItemState extends State<NoteCardItem> {
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () => widget.onNoteClicked,
+        onTap: onNoteClicked,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Row(
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(widget.notes.noteTitle),
-                  const SizedBox(height: 8.0),
-                  Text(widget.notes.noteContent),
-                  const SizedBox(height: 8.0),
-                  Text(widget.notes.noteDate),
-                ],
+              Expanded(
+                flex: 1,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(notes.id.toString()),
+                    const SizedBox(height: 8.0),
+                    Text(notes.noteTitle),
+                    const SizedBox(height: 8.0),
+                    Text(notes.noteContent),
+                    const SizedBox(height: 8.0),
+                    Text(notes.noteDate),
+                  ],
+                ),
               ),
               IconButton(
-                onPressed: () => widget.onNoteDeleted,
-                icon: const Icon(Icons.delete),
-              )
+                onPressed: onNoteDeleted,
+                icon: const Icon(
+                  Icons.delete,
+                  color: Colors.red,
+                ),
+              ),
             ],
           ),
         ),

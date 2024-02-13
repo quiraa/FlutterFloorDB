@@ -18,6 +18,9 @@ abstract class NotesDao {
   @Update(onConflict: OnConflictStrategy.replace)
   Future<void> updateNote(Notes notes);
 
+  // @Query("DELETE FROM tbl_notes WHERE id = :noteId")
+  // Future<void> deleteNoteById(int noteId);
+
   @delete
-  Future<void> deleteNote(Notes notes);
+  Future<void> deleteNote(Notes note);
 }
