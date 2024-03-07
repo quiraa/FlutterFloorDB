@@ -1,30 +1,54 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_floor/interface/pages/home/home_page.dart';
-import 'package:flutter_floor/provider/note_provider.dart';
-import 'package:flutter_floor/provider/todo_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_floor/config/routes/routes_config.dart';
+import 'package:flutter_floor/config/routes/screen_routes.dart';
+import 'package:flutter_floor/config/themes/themes.dart';
+import 'package:flutter_floor/di/injection_container.dart';
+import 'package:flutter_floor/feat/notes/presentation/blocs/notes/notes_bloc.dart';
+import 'package:flutter_floor/feat/notes/presentation/blocs/notes/notes_event.dart';
+import 'package:flutter_floor/feat/notes/presentation/pages/home_page.dart';
+import 'package:flutter_floor/feat/notes/presentation/providers/theme_provider.dart';
 import 'package:provider/provider.dart';
 
-void main() => runApp(const MyApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeDependencies();
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ThemeProvider(),
+      child: const MyApp(),
+    ),
+  );
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (context) => NotesProvider()),
-        ChangeNotifierProvider(create: (context) => TodoProvider())
-      ],
-      child: MaterialApp(
-        title: 'MemoPad Flutter',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
-          useMaterial3: true,
-        ),
-        home: const HomePage(),
-      ),
+    return Consumer<ThemeProvider>(
+      builder: (context, provider, _) {
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider<NotesBloc>(
+              create: (_) => injection()
+                ..add(
+                  const GetAllNotesEvent(),
+                ),
+            ),
+          ],
+          child: MaterialApp(
+            title: 'MemoPad Flutter',
+            onGenerateRoute: RouteConfig().onGenerateRoute,
+            initialRoute: ScreenRoutes.home,
+            home: const HomePage(),
+            debugShowCheckedModeBanner: false,
+            themeMode: provider.themeMode,
+            darkTheme: AppTheme.darkTheme(),
+            theme: AppTheme.lightTheme(),
+          ),
+        );
+      },
     );
   }
 }
