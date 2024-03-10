@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_floor/config/routes/routes_config.dart';
-import 'package:flutter_floor/config/routes/screen_routes.dart';
 import 'package:flutter_floor/config/themes/themes.dart';
 import 'package:flutter_floor/di/injection_container.dart';
 import 'package:flutter_floor/feat/notes/presentation/blocs/notes/notes_bloc.dart';
 import 'package:flutter_floor/feat/notes/presentation/blocs/notes/notes_event.dart';
+import 'package:flutter_floor/feat/notes/presentation/blocs/todos/todos_bloc.dart';
+import 'package:flutter_floor/feat/notes/presentation/blocs/todos/todos_event.dart';
 import 'package:flutter_floor/feat/notes/presentation/pages/home_page.dart';
 import 'package:flutter_floor/feat/notes/presentation/providers/theme_provider.dart';
 import 'package:provider/provider.dart';
@@ -36,11 +36,15 @@ class MyApp extends StatelessWidget {
                   const GetAllNotesEvent(),
                 ),
             ),
+            BlocProvider<TodosBloc>(
+              create: (_) => injection()
+                ..add(
+                  const GetAllTodoEvent(),
+                ),
+            )
           ],
           child: MaterialApp(
             title: 'MemoPad Flutter',
-            onGenerateRoute: RouteConfig().onGenerateRoute,
-            initialRoute: ScreenRoutes.home,
             home: const HomePage(),
             debugShowCheckedModeBanner: false,
             themeMode: provider.themeMode,

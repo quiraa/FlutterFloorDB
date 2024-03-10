@@ -1,51 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_floor/config/routes/route_navigator.dart';
 import 'package:flutter_floor/core/utils/generate_date.dart';
 import 'package:flutter_floor/feat/notes/data/entity/note_entity.dart';
 import 'package:flutter_floor/feat/notes/presentation/blocs/notes/notes_bloc.dart';
 import 'package:flutter_floor/feat/notes/presentation/blocs/notes/notes_event.dart';
-import 'package:flutter_floor/feat/notes/presentation/blocs/notes/notes_state.dart';
+import 'package:ionicons/ionicons.dart';
 
-class AddNotePage extends StatelessWidget {
-  final int? noteId;
-
-  const AddNotePage({
-    Key? key,
-    this.noteId,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: _buildBody(),
-    );
-  }
-
-  _buildBody() {
-    if (noteId == null) {
-      return const AddNoteContent();
-    } else {
-      return BlocBuilder<NotesBloc, NotesState>(
-        builder: (context, state) {
-          return AddNoteContent(
-            note: state.note,
-          );
-        },
-      );
-    }
-  }
-}
-
-class AddNoteContent extends StatefulWidget {
+class AddNotePage extends StatefulWidget {
   final NoteEntity? note;
-  const AddNoteContent({Key? key, this.note}) : super(key: key);
+  const AddNotePage({Key? key, this.note}) : super(key: key);
 
   @override
-  _AddNoteContentState createState() => _AddNoteContentState();
+  _AddNotePageState createState() => _AddNotePageState();
 }
 
-class _AddNoteContentState extends State<AddNoteContent> {
+class _AddNotePageState extends State<AddNotePage> {
   late TextEditingController _titleController;
   late TextEditingController _contentController;
 
@@ -56,13 +25,6 @@ class _AddNoteContentState extends State<AddNoteContent> {
     _contentController = TextEditingController(
       text: widget.note?.content ?? '',
     );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-
-    BlocProvider.of<NotesBloc>(context).add(const GetAllNotesEvent());
   }
 
   @override
@@ -77,17 +39,34 @@ class _AddNoteContentState extends State<AddNoteContent> {
   Widget _buildSaveFab(BuildContext context) {
     return FloatingActionButton(
       onPressed: () {
-        final note = NoteEntity(
-          title: _titleController.text,
-          content: _contentController.text,
-          createdDate: Utils.createDate(),
-        );
-        BlocProvider.of<NotesBloc>(context).add(
-          SaveNoteEvent(note),
-        );
-        Navigator.of(context).pop();
+        if (widget.note == null) {
+          final note = NoteEntity(
+            title: _titleController.text.toString(),
+            content: _contentController.text.toString(),
+            createdDate: 'Created: ${Utils.createDate()}',
+          );
+          BlocProvider.of<NotesBloc>(context).add(SaveNoteEvent(note));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Note Saved'),
+            ),
+          );
+        } else {
+          final updatedNote = NoteEntity(
+            id: widget.note!.id,
+            title: _titleController.text.toString(),
+            content: _contentController.text.toString(),
+            createdDate: 'Updated: ${Utils.createDate()}',
+          );
+          BlocProvider.of<NotesBloc>(context).add(UpdateNoteEvent(updatedNote));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Note Updated'),
+            ),
+          );
+        }
       },
-      child: const Icon(Icons.save_rounded),
+      child: const Icon(Ionicons.save),
     );
   }
 
@@ -103,10 +82,11 @@ class _AddNoteContentState extends State<AddNoteContent> {
       ),
       elevation: 0.0,
       leading: IconButton(
-        onPressed: () => RouteNavigator.pop(context),
-        icon: const Icon(
-          Icons.arrow_back_ios_new_rounded,
-        ),
+        onPressed: () {
+          BlocProvider.of<NotesBloc>(context).add(const GetAllNotesEvent());
+          Navigator.of(context).pop();
+        },
+        icon: const Icon(Ionicons.chevron_back),
       ),
       automaticallyImplyLeading: false,
     );

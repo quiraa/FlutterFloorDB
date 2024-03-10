@@ -4,6 +4,7 @@ import 'package:flutter_floor/feat/notes/domain/usecase/notes/delete_note_usecas
 import 'package:flutter_floor/feat/notes/domain/usecase/notes/get_all_notes_usecase.dart';
 import 'package:flutter_floor/feat/notes/domain/usecase/notes/save_notes_usecase.dart';
 import 'package:flutter_floor/feat/notes/domain/usecase/notes/search_notes_usecase.dart';
+import 'package:flutter_floor/feat/notes/domain/usecase/notes/update_note_usecase.dart';
 import 'package:flutter_floor/feat/notes/presentation/blocs/notes/notes_event.dart';
 import 'package:flutter_floor/feat/notes/presentation/blocs/notes/notes_state.dart';
 
@@ -13,6 +14,7 @@ class NotesBloc extends Bloc<NotesEvent, NotesState> {
   final GetAllNoteUseCase getAllNoteUseCase;
   final SaveNoteUseCase saveNoteUseCase;
   final SearchNoteUseCase searchNoteUseCase;
+  final UpdateNoteUseCase updateNoteUseCase;
 
   NotesBloc(
     this.deleteAllNoteUseCase,
@@ -20,11 +22,23 @@ class NotesBloc extends Bloc<NotesEvent, NotesState> {
     this.getAllNoteUseCase,
     this.saveNoteUseCase,
     this.searchNoteUseCase,
-  ) : super(const NotesLoadingState()) {
+    this.updateNoteUseCase,
+  ) : super(const NotesEmptyState()) {
     on<DeleteAllNoteEvent>(onDeleteAllNote);
     on<SearchNoteEvent>(onSearchNote);
     on<DeleteNoteEvent>(onDeleteNote);
     on<GetAllNotesEvent>(onGetAllNotes);
+    on<SaveNoteEvent>(onSaveNote);
+    on<UpdateNoteEvent>(onUpdateNote);
+  }
+
+  void onUpdateNote(
+    UpdateNoteEvent event,
+    Emitter<NotesState> emit,
+  ) async {
+    await updateNoteUseCase(params: event.note);
+    final currentNotes = await getAllNoteUseCase();
+    emit(NotesSuccessState(currentNotes));
   }
 
   void onSaveNote(
@@ -40,7 +54,6 @@ class NotesBloc extends Bloc<NotesEvent, NotesState> {
     GetAllNotesEvent event,
     Emitter<NotesState> emit,
   ) async {
-    emit(const NotesLoadingState());
     final allNotes = await getAllNoteUseCase();
     emit(NotesSuccessState(allNotes));
   }

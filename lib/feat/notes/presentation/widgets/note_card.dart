@@ -5,7 +5,7 @@ import 'package:ionicons/ionicons.dart';
 
 class AvailableNoteContent extends StatelessWidget {
   final List<NoteEntity> notes;
-  final void Function(int noteId) onNoteClick;
+  final void Function(NoteEntity note) onNoteClick;
   final void Function(NoteEntity note) onNoteDelete;
 
   const AvailableNoteContent({
@@ -35,7 +35,7 @@ class AvailableNoteContent extends StatelessWidget {
 
 class NoteCard extends StatelessWidget {
   final NoteEntity notes;
-  final void Function(int noteId) onNoteClick;
+  final void Function(NoteEntity note) onNoteClick;
   final void Function(NoteEntity note) onNoteDelete;
 
   const NoteCard({
@@ -48,8 +48,11 @@ class NoteCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () {},
+        onTap: () {
+          onNoteClick(notes);
+        },
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Row(
@@ -60,9 +63,9 @@ class NoteCard extends StatelessWidget {
               ),
               IconButton(
                 onPressed: () => onNoteDelete(notes),
-                icon: const Icon(
+                icon: Icon(
                   Ionicons.trash,
-                  color: Colors.redAccent,
+                  color: Theme.of(context).colorScheme.error,
                 ),
               ),
             ],
@@ -80,15 +83,19 @@ class NoteCard extends StatelessWidget {
         Text(
           notes.title ?? '',
           style: AppTypography.noteTitle,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 8.0),
         Text(
           notes.content ?? '',
           style: AppTypography.noteContent,
+          maxLines: 4,
+          overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 8.0),
         Text(
-          'Created: ${notes.createdDate ?? ''}',
+          notes.createdDate ?? '',
           style: AppTypography.noteDate,
         ),
       ],

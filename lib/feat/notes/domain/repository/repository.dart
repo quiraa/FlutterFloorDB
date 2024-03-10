@@ -8,17 +8,19 @@ abstract class Repository {
 
   Future<void> deleteSingleNote(NoteEntity note);
 
+  Future<void> updateNote(NoteEntity note);
+
   Future<void> deleteAllNote();
 
   Future<List<NoteEntity>> searchNotes(String query);
-
-  Stream<NoteEntity?> getSingleNote(int noteId);
 
   Future<List<TodoEntity>> getAllTodos();
 
   Future<void> insertTodo(TodoEntity todo);
 
   Future<void> deleteAllTodo();
+
+  Future<void> updateTodo(TodoEntity todo);
 
   Future<void> deleteSingleTodo(TodoEntity todo);
 }

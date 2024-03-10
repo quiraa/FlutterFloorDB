@@ -34,14 +34,8 @@ class RepositoryImpl implements Repository {
   }
 
   @override
-  Future<List<TodoEntity>> getAllTodos() {
-    // TODO: implement getAllTodos
-    throw UnimplementedError();
-  }
-
-  @override
-  Stream<NoteEntity?> getSingleNote(int noteId) {
-    return database.noteDao.getSingleNote(noteId);
+  Future<List<TodoEntity>> getAllTodos() async {
+    return database.todoDao.getTodosOrderByImportantAndTask();
   }
 
   @override
@@ -51,11 +45,21 @@ class RepositoryImpl implements Repository {
 
   @override
   Future<void> insertTodo(TodoEntity todo) async {
-    return database.todoDao.createTodo(todo);
+    return database.todoDao.insertTodo(todo);
   }
 
   @override
   Future<List<NoteEntity>> searchNotes(String query) async {
     return database.noteDao.searchNotes(query);
+  }
+
+  @override
+  Future<void> updateNote(NoteEntity note) async {
+    return database.noteDao.updateNote(note);
+  }
+
+  @override
+  Future<void> updateTodo(TodoEntity todo) async {
+    return database.todoDao.updateTodo(todo);
   }
 }

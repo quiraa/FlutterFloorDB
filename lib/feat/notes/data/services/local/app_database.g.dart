@@ -87,7 +87,7 @@ class _$AppDatabase extends AppDatabase {
       },
       onCreate: (database, version) async {
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `notes` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `title` TEXT, `content` TEXT, `createdDate` TEXT, `updatedDate` TEXT)');
+            'CREATE TABLE IF NOT EXISTS `notes` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `title` TEXT, `content` TEXT, `createdDate` TEXT)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `todos` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `task` TEXT, `isImportant` INTEGER)');
 
@@ -112,7 +112,7 @@ class _$NoteDao extends NoteDao {
   _$NoteDao(
     this.database,
     this.changeListener,
-  )   : _queryAdapter = QueryAdapter(database, changeListener),
+  )   : _queryAdapter = QueryAdapter(database),
         _noteEntityInsertionAdapter = InsertionAdapter(
             database,
             'notes',
@@ -120,9 +120,18 @@ class _$NoteDao extends NoteDao {
                   'id': item.id,
                   'title': item.title,
                   'content': item.content,
-                  'createdDate': item.createdDate,
-                },
-            changeListener),
+                  'createdDate': item.createdDate
+                }),
+        _noteEntityUpdateAdapter = UpdateAdapter(
+            database,
+            'notes',
+            ['id'],
+            (NoteEntity item) => <String, Object?>{
+                  'id': item.id,
+                  'title': item.title,
+                  'content': item.content,
+                  'createdDate': item.createdDate
+                }),
         _noteEntityDeletionAdapter = DeletionAdapter(
             database,
             'notes',
@@ -131,9 +140,8 @@ class _$NoteDao extends NoteDao {
                   'id': item.id,
                   'title': item.title,
                   'content': item.content,
-                  'createdDate': item.createdDate,
-                },
-            changeListener);
+                  'createdDate': item.createdDate
+                });
 
   final sqflite.DatabaseExecutor database;
 
@@ -143,26 +151,14 @@ class _$NoteDao extends NoteDao {
 
   final InsertionAdapter<NoteEntity> _noteEntityInsertionAdapter;
 
-  final DeletionAdapter<NoteEntity> _noteEntityDeletionAdapter;
+  final UpdateAdapter<NoteEntity> _noteEntityUpdateAdapter;
 
-  @override
-  Stream<NoteEntity?> getSingleNote(int noteId) {
-    return _queryAdapter.queryStream('SELECT * FROM notes WHERE id = ?1',
-        mapper: (Map<String, Object?> row) => NoteEntity(
-              id: row['id'] as int?,
-              title: row['title'] as String?,
-              content: row['content'] as String?,
-              createdDate: row['createdDate'] as String?,
-            ),
-        arguments: [noteId],
-        queryableName: 'notes',
-        isView: false);
-  }
+  final DeletionAdapter<NoteEntity> _noteEntityDeletionAdapter;
 
   @override
   Future<List<NoteEntity>> searchNotes(String query) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM notes WHERE title LIKE ?1 OR content LIKE ?1 ORDER BY createdDate',
+        'SELECT * FROM notes WHERE title LIKE ?1 OR content LIKE ?1 ORDER BY updatedDate',
         mapper: (Map<String, Object?> row) => NoteEntity(id: row['id'] as int?, title: row['title'] as String?, content: row['content'] as String?, createdDate: row['createdDate'] as String?),
         arguments: [query]);
   }
@@ -174,7 +170,7 @@ class _$NoteDao extends NoteDao {
 
   @override
   Future<List<NoteEntity>> getNotesOrderByUpdatedDate() async {
-    return _queryAdapter.queryList('SELECT * FROM notes ORDER BY createdDate',
+    return _queryAdapter.queryList('SELECT * FROM notes ORDER BY updatedDate',
         mapper: (Map<String, Object?> row) => NoteEntity(
             id: row['id'] as int?,
             title: row['title'] as String?,
@@ -185,6 +181,11 @@ class _$NoteDao extends NoteDao {
   @override
   Future<void> insertNote(NoteEntity note) async {
     await _noteEntityInsertionAdapter.insert(note, OnConflictStrategy.replace);
+  }
+
+  @override
+  Future<void> updateNote(NoteEntity note) async {
+    await _noteEntityUpdateAdapter.update(note, OnConflictStrategy.replace);
   }
 
   @override
@@ -201,6 +202,17 @@ class _$TodoDao extends TodoDao {
         _todoEntityInsertionAdapter = InsertionAdapter(
             database,
             'todos',
+            (TodoEntity item) => <String, Object?>{
+                  'id': item.id,
+                  'task': item.task,
+                  'isImportant': item.isImportant == null
+                      ? null
+                      : (item.isImportant! ? 1 : 0)
+                }),
+        _todoEntityUpdateAdapter = UpdateAdapter(
+            database,
+            'todos',
+            ['id'],
             (TodoEntity item) => <String, Object?>{
                   'id': item.id,
                   'task': item.task,
@@ -228,6 +240,8 @@ class _$TodoDao extends TodoDao {
 
   final InsertionAdapter<TodoEntity> _todoEntityInsertionAdapter;
 
+  final UpdateAdapter<TodoEntity> _todoEntityUpdateAdapter;
+
   final DeletionAdapter<TodoEntity> _todoEntityDeletionAdapter;
 
   @override
@@ -248,8 +262,13 @@ class _$TodoDao extends TodoDao {
   }
 
   @override
-  Future<void> createTodo(TodoEntity todos) async {
+  Future<void> insertTodo(TodoEntity todos) async {
     await _todoEntityInsertionAdapter.insert(todos, OnConflictStrategy.replace);
+  }
+
+  @override
+  Future<void> updateTodo(TodoEntity todo) async {
+    await _todoEntityUpdateAdapter.update(todo, OnConflictStrategy.replace);
   }
 
   @override

@@ -3,12 +3,9 @@ import 'package:flutter_floor/feat/notes/data/entity/note_entity.dart';
 
 @dao
 abstract class NoteDao {
-  @Query('SELECT * FROM notes WHERE id = :noteId')
-  Stream<NoteEntity?> getSingleNote(int noteId);
-
   @Query(
-      'SELECT * FROM notes WHERE title LIKE :query OR content LIKE :query ORDER BY updatedDate')
-  Future<List<NoteEntity>> searchNotes(String query);
+      "SELECT * FROM notes WHERE title LIKE '%' || :search || '%' OR content LIKE '%' || :search || '%' ORDER BY createdDate")
+  Future<List<NoteEntity>> searchNotes(String search);
 
   @Query('DELETE FROM notes')
   Future<void> deleteAllNotes();
@@ -16,9 +13,12 @@ abstract class NoteDao {
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertNote(NoteEntity note);
 
+  @Update(onConflict: OnConflictStrategy.replace)
+  Future<void> updateNote(NoteEntity note);
+
   @delete
   Future<void> deleteNote(NoteEntity note);
 
-  @Query('SELECT * FROM notes ORDER BY updatedDate')
+  @Query('SELECT * FROM notes ORDER BY createdDate')
   Future<List<NoteEntity>> getNotesOrderByUpdatedDate();
 }

@@ -10,7 +10,10 @@ abstract class TodoDao {
   Future<void> deleteAllTodos();
 
   @Insert(onConflict: OnConflictStrategy.replace)
-  Future<void> createTodo(TodoEntity todos);
+  Future<void> insertTodo(TodoEntity todos);
+
+  @Update(onConflict: OnConflictStrategy.replace)
+  Future<void> updateTodo(TodoEntity todo);
 
   @delete
   Future<void> deleteTodo(TodoEntity todos);
