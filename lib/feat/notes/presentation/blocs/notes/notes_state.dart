@@ -18,3 +18,7 @@ class NotesEmptyState extends NotesState {
 class NotesSuccessState extends NotesState {
   const NotesSuccessState(List<NoteEntity> notes) : super(notes: notes);
 }
+
+class SearchResultState extends NotesState {
+  const SearchResultState(List<NoteEntity> notes) : super(notes: notes);
+}

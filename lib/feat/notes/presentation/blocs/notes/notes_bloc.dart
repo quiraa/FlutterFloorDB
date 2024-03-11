@@ -1,9 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_floor/feat/notes/domain/usecase/notes/delete_all_note_usecase.dart';
 import 'package:flutter_floor/feat/notes/domain/usecase/notes/delete_note_usecase.dart';
-import 'package:flutter_floor/feat/notes/domain/usecase/notes/get_all_notes_usecase.dart';
 import 'package:flutter_floor/feat/notes/domain/usecase/notes/save_notes_usecase.dart';
 import 'package:flutter_floor/feat/notes/domain/usecase/notes/search_notes_usecase.dart';
+import 'package:flutter_floor/feat/notes/domain/usecase/notes/get_all_notes_usecase.dart';
 import 'package:flutter_floor/feat/notes/domain/usecase/notes/update_note_usecase.dart';
 import 'package:flutter_floor/feat/notes/presentation/blocs/notes/notes_event.dart';
 import 'package:flutter_floor/feat/notes/presentation/blocs/notes/notes_state.dart';
@@ -11,7 +11,7 @@ import 'package:flutter_floor/feat/notes/presentation/blocs/notes/notes_state.da
 class NotesBloc extends Bloc<NotesEvent, NotesState> {
   final DeleteAllNoteUseCase deleteAllNoteUseCase;
   final DeleteSingleNoteUseCase deleteSingleNoteUseCase;
-  final GetAllNoteUseCase getAllNoteUseCase;
+  final GetAllNotesUseCase getAllNotesUseCase;
   final SaveNoteUseCase saveNoteUseCase;
   final SearchNoteUseCase searchNoteUseCase;
   final UpdateNoteUseCase updateNoteUseCase;
@@ -19,10 +19,10 @@ class NotesBloc extends Bloc<NotesEvent, NotesState> {
   NotesBloc(
     this.deleteAllNoteUseCase,
     this.deleteSingleNoteUseCase,
-    this.getAllNoteUseCase,
     this.saveNoteUseCase,
     this.searchNoteUseCase,
     this.updateNoteUseCase,
+    this.getAllNotesUseCase,
   ) : super(const NotesEmptyState()) {
     on<DeleteAllNoteEvent>(onDeleteAllNote);
     on<SearchNoteEvent>(onSearchNote);
@@ -37,7 +37,7 @@ class NotesBloc extends Bloc<NotesEvent, NotesState> {
     Emitter<NotesState> emit,
   ) async {
     await updateNoteUseCase(params: event.note);
-    final currentNotes = await getAllNoteUseCase();
+    final currentNotes = await getAllNotesUseCase();
     emit(NotesSuccessState(currentNotes));
   }
 
@@ -46,7 +46,7 @@ class NotesBloc extends Bloc<NotesEvent, NotesState> {
     Emitter<NotesState> emit,
   ) async {
     await saveNoteUseCase(params: event.note);
-    final currentNotes = await getAllNoteUseCase();
+    final currentNotes = await getAllNotesUseCase();
     emit(NotesSuccessState(currentNotes));
   }
 
@@ -54,7 +54,7 @@ class NotesBloc extends Bloc<NotesEvent, NotesState> {
     GetAllNotesEvent event,
     Emitter<NotesState> emit,
   ) async {
-    final allNotes = await getAllNoteUseCase();
+    final allNotes = await getAllNotesUseCase();
     emit(NotesSuccessState(allNotes));
   }
 
@@ -63,7 +63,7 @@ class NotesBloc extends Bloc<NotesEvent, NotesState> {
     Emitter<NotesState> emit,
   ) async {
     await deleteAllNoteUseCase();
-    final currentNotes = await getAllNoteUseCase();
+    final currentNotes = await getAllNotesUseCase();
     emit(NotesSuccessState(currentNotes));
   }
 
@@ -71,14 +71,14 @@ class NotesBloc extends Bloc<NotesEvent, NotesState> {
     SearchNoteEvent event,
     Emitter<NotesState> emit,
   ) async {
-    if (event.query!.isEmpty) {
-      final notes = await getAllNoteUseCase();
-      emit(NotesSuccessState(notes));
-    } else {
+    if (event.query!.isNotEmpty) {
       final searchResult = await searchNoteUseCase(
-        params: SearchNoteParams(event.query!),
+        params: SearchNoteParams(event.query ?? ''),
       );
-      emit(NotesSuccessState(searchResult));
+      emit(SearchResultState(searchResult));
+    } else {
+      final notes = await getAllNotesUseCase();
+      emit(NotesSuccessState(notes));
     }
   }
 
@@ -87,7 +87,7 @@ class NotesBloc extends Bloc<NotesEvent, NotesState> {
     Emitter<NotesState> emit,
   ) async {
     await deleteSingleNoteUseCase(params: event.note);
-    final currentNotes = await getAllNoteUseCase();
+    final currentNotes = await getAllNotesUseCase();
     emit(NotesSuccessState(currentNotes));
   }
 }

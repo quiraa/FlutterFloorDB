@@ -4,8 +4,11 @@ import 'package:flutter_floor/feat/notes/data/entity/note_entity.dart';
 @dao
 abstract class NoteDao {
   @Query(
-      "SELECT * FROM notes WHERE title LIKE '%' || :search || '%' OR content LIKE '%' || :search || '%' ORDER BY createdDate")
+      "SELECT * FROM notes WHERE title LIKE '%' || :search || '%' OR content LIKE '%' || :search || '%'")
   Future<List<NoteEntity>> searchNotes(String search);
+
+  @Query('SELECT * FROM notes ORDER BY createdDate DESC')
+  Future<List<NoteEntity>> getAllNotesOrderByDate();
 
   @Query('DELETE FROM notes')
   Future<void> deleteAllNotes();
@@ -18,7 +21,4 @@ abstract class NoteDao {
 
   @delete
   Future<void> deleteNote(NoteEntity note);
-
-  @Query('SELECT * FROM notes ORDER BY createdDate')
-  Future<List<NoteEntity>> getNotesOrderByUpdatedDate();
 }

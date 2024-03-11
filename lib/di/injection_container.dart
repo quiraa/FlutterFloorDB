@@ -4,9 +4,9 @@ import 'package:flutter_floor/feat/notes/data/services/local/app_database.dart';
 import 'package:flutter_floor/feat/notes/domain/repository/repository.dart';
 import 'package:flutter_floor/feat/notes/domain/usecase/notes/delete_all_note_usecase.dart';
 import 'package:flutter_floor/feat/notes/domain/usecase/notes/delete_note_usecase.dart';
-import 'package:flutter_floor/feat/notes/domain/usecase/notes/get_all_notes_usecase.dart';
 import 'package:flutter_floor/feat/notes/domain/usecase/notes/save_notes_usecase.dart';
 import 'package:flutter_floor/feat/notes/domain/usecase/notes/search_notes_usecase.dart';
+import 'package:flutter_floor/feat/notes/domain/usecase/notes/get_all_notes_usecase.dart';
 import 'package:flutter_floor/feat/notes/domain/usecase/notes/update_note_usecase.dart';
 import 'package:flutter_floor/feat/notes/domain/usecase/todos/delete_all_todos_usecase.dart';
 import 'package:flutter_floor/feat/notes/domain/usecase/todos/delete_todo_usecase.dart';
@@ -28,8 +28,8 @@ Future<void> initializeDependencies() async {
   injection.registerSingleton<Repository>(RepositoryImpl(injection()));
 
   // * Notes Use Cases
-  injection.registerSingleton<GetAllNoteUseCase>(
-    GetAllNoteUseCase(injection()),
+  injection.registerSingleton<GetAllNotesUseCase>(
+    GetAllNotesUseCase(injection()),
   );
 
   injection.registerSingleton<DeleteAllNoteUseCase>(

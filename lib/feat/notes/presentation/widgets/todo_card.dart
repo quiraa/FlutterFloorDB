@@ -57,10 +57,7 @@ class TodoCard extends StatelessWidget {
               onPressed: () {
                 onTodoDelete!(todo!);
               },
-              icon: const Icon(
-                Ionicons.checkmark_circle_outline,
-                size: 28,
-              ),
+              icon: const Icon(Ionicons.checkmark_circle),
             ),
             Expanded(
               flex: 1,

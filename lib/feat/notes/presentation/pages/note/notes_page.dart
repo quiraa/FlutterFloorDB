@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_floor/config/routes/app_router.dart';
+import 'package:flutter_floor/config/routes/screen_route.dart';
 import 'package:flutter_floor/config/themes/typography.dart';
 import 'package:flutter_floor/feat/notes/data/entity/note_entity.dart';
 import 'package:flutter_floor/feat/notes/presentation/blocs/notes/notes_bloc.dart';
@@ -20,12 +22,6 @@ class _NotesPageState extends State<NotesPage> {
   final _searchController = TextEditingController();
 
   @override
-  void initState() {
-    super.initState();
-    BlocProvider.of<NotesBloc>(context).add(const GetAllNotesEvent());
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(context),
@@ -40,10 +36,13 @@ class _NotesPageState extends State<NotesPage> {
         switch (state.runtimeType) {
           case NotesEmptyState:
             return const Center(
-              child: Text('Empty Notes, Try To Add One'),
+              child: Text(
+                'Empty Note, Try to Create One',
+                style: AppTypography.noteDate,
+              ),
             );
 
-          case NotesSuccessState:
+          case SearchResultState:
             return NotesContent(
               notes: state.notes ?? [],
               onNotesClick: (note) {
@@ -53,6 +52,19 @@ class _NotesPageState extends State<NotesPage> {
                     builder: (_) => AddNotePage(note: note),
                   ),
                 );
+              },
+              onNoteDelete: (note) {
+                BlocProvider.of<NotesBloc>(context).add(
+                  DeleteNoteEvent(note),
+                );
+              },
+            );
+
+          case NotesSuccessState:
+            return NotesContent(
+              notes: state.notes ?? [],
+              onNotesClick: (note) {
+                AppRouter.push(context, ScreenRoute.note, arguments: note);
               },
               onNoteDelete: (note) {
                 BlocProvider.of<NotesBloc>(context).add(
@@ -71,14 +83,7 @@ class _NotesPageState extends State<NotesPage> {
   Widget _buildAddNoteFab(BuildContext context) {
     return FloatingActionButton(
       onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => const AddNotePage(
-              note: null,
-            ),
-          ),
-        );
+        AppRouter.push(context, ScreenRoute.note, arguments: null);
       },
       child: const Icon(Ionicons.add),
     );
@@ -113,18 +118,6 @@ class _NotesPageState extends State<NotesPage> {
         Padding(
           padding: const EdgeInsets.only(right: 16),
           child: IconButton(
-            tooltip: 'Filter',
-            onPressed: () {
-              BlocProvider.of<NotesBloc>(context).add(
-                const DeleteAllNoteEvent(),
-              );
-            },
-            icon: const Icon(Ionicons.filter),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(right: 16),
-          child: IconButton(
             tooltip: 'Delete All ',
             onPressed: () {
               BlocProvider.of<NotesBloc>(context).add(
@@ -147,7 +140,7 @@ class _NotesPageState extends State<NotesPage> {
 }
 
 class NotesContent extends StatefulWidget {
-  final List<NoteEntity> notes;
+  final List<NoteEntity>? notes;
   final void Function(NoteEntity note) onNotesClick;
   final void Function(NoteEntity note) onNoteDelete;
 
@@ -171,10 +164,10 @@ class _NotesContentState extends State<NotesContent> {
   }
 
   Widget _buildBody() {
-    switch (widget.notes.isNotEmpty) {
+    switch (widget.notes!.isNotEmpty) {
       case true:
         return AvailableNoteContent(
-          notes: widget.notes,
+          notes: widget.notes!,
           onNoteClick: widget.onNotesClick,
           onNoteDelete: widget.onNoteDelete,
         );

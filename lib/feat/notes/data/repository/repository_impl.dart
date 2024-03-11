@@ -30,7 +30,7 @@ class RepositoryImpl implements Repository {
 
   @override
   Future<List<NoteEntity>> getAllNotesOrderByDate() async {
-    return database.noteDao.getNotesOrderByUpdatedDate();
+    return database.noteDao.getAllNotesOrderByDate();
   }
 
   @override

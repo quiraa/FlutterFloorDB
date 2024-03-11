@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_floor/feat/notes/data/pref/theme_preference.dart';
+import 'package:flutter_floor/feat/notes/data/pref/app_preference.dart';
 
 class ThemeProvider extends ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.light;
@@ -11,7 +11,7 @@ class ThemeProvider extends ChangeNotifier {
   }
 
   void _loadTheme() async {
-    final bool? isDarkMode = await ThemePreference.getTheme();
+    final bool? isDarkMode = await AppPrefs.getTheme();
     if (isDarkMode != null) {
       _themeMode = isDarkMode ? ThemeMode.dark : ThemeMode.light;
       notifyListeners();
@@ -20,7 +20,7 @@ class ThemeProvider extends ChangeNotifier {
 
   void toggleTheme(bool isDarkMode) {
     _themeMode = isDarkMode ? ThemeMode.dark : ThemeMode.light;
-    ThemePreference.setTheme(isDarkMode);
+    AppPrefs.setTheme(isDarkMode);
     notifyListeners();
   }
 }

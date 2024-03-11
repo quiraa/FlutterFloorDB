@@ -1,6 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-class ThemePreference {
+class AppPrefs {
   static const themeKey = 'THEME_KEY';
 
   static Future<void> setTheme(bool value) async {

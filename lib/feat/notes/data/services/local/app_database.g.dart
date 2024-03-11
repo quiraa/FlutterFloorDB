@@ -156,26 +156,27 @@ class _$NoteDao extends NoteDao {
   final DeletionAdapter<NoteEntity> _noteEntityDeletionAdapter;
 
   @override
-  Future<List<NoteEntity>> searchNotes(String query) async {
+  Future<List<NoteEntity>> searchNotes(String search) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM notes WHERE title LIKE ?1 OR content LIKE ?1 ORDER BY updatedDate',
+        'SELECT * FROM notes WHERE title LIKE \'%\' || ?1 || \'%\' OR content LIKE \'%\' || ?1 || \'%\'',
         mapper: (Map<String, Object?> row) => NoteEntity(id: row['id'] as int?, title: row['title'] as String?, content: row['content'] as String?, createdDate: row['createdDate'] as String?),
-        arguments: [query]);
+        arguments: [search]);
   }
 
   @override
-  Future<void> deleteAllNotes() async {
-    await _queryAdapter.queryNoReturn('DELETE FROM notes');
-  }
-
-  @override
-  Future<List<NoteEntity>> getNotesOrderByUpdatedDate() async {
-    return _queryAdapter.queryList('SELECT * FROM notes ORDER BY updatedDate',
+  Future<List<NoteEntity>> getAllNotesOrderByDate() async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM notes ORDER BY createdDate DESC',
         mapper: (Map<String, Object?> row) => NoteEntity(
             id: row['id'] as int?,
             title: row['title'] as String?,
             content: row['content'] as String?,
             createdDate: row['createdDate'] as String?));
+  }
+
+  @override
+  Future<void> deleteAllNotes() async {
+    await _queryAdapter.queryNoReturn('DELETE FROM notes');
   }
 
   @override

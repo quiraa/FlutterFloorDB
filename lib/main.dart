@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_floor/config/routes/route_handler.dart';
+import 'package:flutter_floor/config/routes/screen_route.dart';
 import 'package:flutter_floor/config/themes/themes.dart';
 import 'package:flutter_floor/di/injection_container.dart';
 import 'package:flutter_floor/feat/notes/presentation/blocs/notes/notes_bloc.dart';
@@ -31,16 +33,10 @@ class MyApp extends StatelessWidget {
         return MultiBlocProvider(
           providers: [
             BlocProvider<NotesBloc>(
-              create: (_) => injection()
-                ..add(
-                  const GetAllNotesEvent(),
-                ),
+              create: (context) => injection()..add(const GetAllNotesEvent()),
             ),
             BlocProvider<TodosBloc>(
-              create: (_) => injection()
-                ..add(
-                  const GetAllTodoEvent(),
-                ),
+              create: (context) => injection()..add(const GetAllTodoEvent()),
             )
           ],
           child: MaterialApp(
@@ -50,6 +46,8 @@ class MyApp extends StatelessWidget {
             themeMode: provider.themeMode,
             darkTheme: AppTheme.darkTheme(),
             theme: AppTheme.lightTheme(),
+            initialRoute: ScreenRoute.home,
+            onGenerateRoute: RouteHandler().onGenerateRoute,
           ),
         );
       },
